@@ -1,0 +1,17 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings</h2>
+    <ul>
+    {% for name in listings %}
+       <li style="margin-bottom: 40px;">Name of the listing:<span style="font-weight: bold; text-transform: capitalize;"> {{ name.title}} </span><br>
+           <img src= "{{ name.image.url }}" alt = "content" style="max-height:300px ;"> <br>
+           Starting Bid: {{ name.startingBid }}<br>
+            Description: {{ name.description }}<br>
+            Category: {{ name.category }}
+       </li>
+    {% empty %}
+    <h1> No listings available</h1>
+    {% endfor %}
+    </ul>
+{% endblock %}
