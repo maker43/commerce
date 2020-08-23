@@ -1,13 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title> Create Listing</title>
-    </head>
-    <body>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form }}
-            <button type="submit">Upload</button>
-        </form>
-    </body>
-</html>
+{% extends 'auctions/layout.html' %}
+
+{% block title %} Create Listing {% endblock %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload</button>
+    </form>
+    {% else %}
+    You need to <a href= "{% url 'login' %}"> log in </a> in order to be able to create a listing.
+    {% endif %}
+{% endblock %}

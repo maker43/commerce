@@ -82,3 +82,5 @@ def create(request):
     return render(request, "auctions/create.html",{
         "form":form
     })
+
+def listing_page(request):
