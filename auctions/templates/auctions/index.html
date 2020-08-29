@@ -9,6 +9,8 @@
            Starting Bid: {{ name.startingBid }}<br>
             Description: {{ name.description }}<br>
             Category: {{ name.category }}
+            Listed by: {{ name.listedBy }}
+            Date listed: {{ name.createdOn|date:"H:i m/d/Y " }}
        </li>
     {% empty %}
     <h1> No listings available</h1>
