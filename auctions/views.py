@@ -1,5 +1,4 @@
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
+from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -9,11 +8,6 @@ import datetime
 from .models import User, Listing
 from .forms import ListingForm, BidForm
 
-def validate_bid(bid, highest_bid):
-    if bid < highest_bid:
-        raise ValidationError( 
-        _('%(bid)s is under the minimal amount'),params = {'bid':bid}, 
-        )
 
 def index(request):
     listings = Listing.objects.all()
@@ -127,7 +121,7 @@ def listing_page(request,listing_id):
             
             return render(request, "auctions/listing.html", {
                 "form": BidForm(), "listing": listing, "highest_bid_amount": highest_bid,
-                "highest_bidder": None, "error": f"Value error: Your bid ({bidAmount}$) is not high enough.\nMinimal bid is: {highest_bid+1}$"
+                "highest_bidder": None, "error": f"Value error: Your bid ({bidAmount}$) is not high enough.\nMinimal bid is {highest_bid+1}$"
             })
     else:
         return render( request, "auctions/listing.html", {

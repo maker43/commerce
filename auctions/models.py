@@ -42,13 +42,14 @@ class Bid(models.Model):
     id = models.AutoField(primary_key=True)
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE,related_name="bids")
     bidder = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name="user_bids")
-    bid = models.IntegerField(validators=[validate_bid])
+    bid = models.IntegerField()
 
     def __gt__(self, other):
         return self.bid > other.bid
     def __str__(self):
         return f"{self.bid}"
-    def validate_bid(bid, highest_bid):
+    def validate_bid(self, highest_bid):
+        bid = self.bid
         if bid < highest_bid:
             raise ValidationError( 
             _('%(bid)s is under the minimal amount'),params = {'bid':bid}, 
