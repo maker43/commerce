@@ -19,7 +19,7 @@
 					<p><span style="font-weight: bold; text-transform: capitalize;"> {{ name.title}} </span><br></a></p>
 					<p>Description: {{ name.description }}<br></p>
 					<p>Listed by: {{ name.listedBy }}<br></p>
-					<p>Created: {{ name.createdOn|date:"H:i m/d/Y " }}<br></p>
+					<p>Created on: {{ name.createdOn|date:"H:i m/d/Y " }}<br></p>
 					<p>Category: {{ name.category }}<br></p>
 					{% if name.bids.max %}
 						<p style="margin-top: 49px;font-size:20px;"><span style="color:red;">Current price:</span> {{ name.bids.max }}$<br></p>

@@ -57,7 +57,7 @@
 						Listed By : {{ listing.listedBy }}
 					</p>
 					<p>
-						Created On : {{ listing.createdOn| date:" d M Y H:i" }}h
+						Created On: {{ listing.createdOn| date:" d M Y H:i" }}h
 					</p>
 					<p>
 						Current bid:<strong style="color: red;"> {{ highest_bid_amount }}$.</strong> 
@@ -65,7 +65,7 @@
 					{% if highest_bidder %}
 						{% if highest_bidder == user %}
 							{% if not listing.active %}
-								Congratulations, you have won this auction! <br>
+								<strong>Congratulations, you have won this auction! </strong>
 							{% else %}
 								Bidder: You.
 							{% endif %}
