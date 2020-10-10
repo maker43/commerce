@@ -1,0 +1,29 @@
+{% extends 'auctions/layout.html' %}
+{% block title%}
+	Watchlist
+{% endblock %}
+{% block body %}
+	{% if user.is_authenticated and watchlist %}
+		{% for listing in watchlist %}
+		<li style="margin-bottom: 40px;">Name of the listing:<a href="{% url 'listing_page' listing.id %} ">
+           <span style="font-weight: bold; text-transform: capitalize;"> {{ listing.title}} </span><br></a>
+           <img src= "{{ listing.image }}" alt = "content" style="max-height:300px ;"> <br>
+          
+            Description: {{ listing.description }}<br>
+            Listed by: {{ listing.listedBy }}<br>
+            Created on: {{ listing.createdOn|date:" d M Y H:i" }}h<br>
+			Category: {{ listing.category }}<br>
+			{% if name.bids.max %}
+                <p style="margin-top: 49px;font-size:20px;"><span style="color:red;">Current price:</span> {{ listing.bids.max }}$<br></p>
+            {% else %}
+                <p style="margin-top: 49px;font-size:20px;"><span style="color:red;">Current price:</span> {{ listing.startingBid }}$<br></p>
+            {% endif %}	
+	   </li>
+		{% endfor %}
+	{% elif user.is_authenticated and not watchlist %}
+	   <h3>Your watchlist is empty.</h3>
+	{% else %}
+	   Please <a href="{% url 'login' %}">Sign in</a> to see your Watchlist.
+	   In case you dont have account <a href="{% url 'register' %}">Register</a> here.
+	{% endif %}
+{% endblock %}

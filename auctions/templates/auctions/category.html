@@ -1,0 +1,36 @@
+{% extends 'auctions/layout.html' %}
+{% block title %} {{ category_name }} {% endblock %}
+
+{% block body %}
+	<h2 style="margin:40px;">Category:<strong> {{ category_name }}</strong></h2>
+	{% if category_listings %}
+    <ul>
+		{% for name in category_listings %}
+			<div class="row" id="listings">
+				<div class="col-6">
+					{% if name.image %}
+						<img src= "{{ name.image }}" alt = "content"><br>
+					{% else %}
+						<img src= "http://kargoex.com/assets/images/no-image-available.jpg"><br>
+					{% endif %}
+				</div>
+				<div class="col-6 info">
+					<p><a href="{% url 'listing_page' name.id %} "></p>
+					<p><span style="font-weight: bold; text-transform: capitalize;"> {{ name.title}} </span><br></a></p>
+					<p>Description: {{ name.description }}<br></p>
+					<p>Listed by: {{ name.listedBy }}<br></p>
+					<p>Created: {{ name.createdOn|date:"H:i m/d/Y " }}<br></p>
+					<p>Category: {{ name.category }}<br></p>
+					{% if name.bids.max %}
+						<p style="margin-top: 49px;font-size:20px;"><span style="color:red;">Current price:</span> {{ name.bids.max }}$<br></p>
+					{% else %}
+						<p style="margin-top: 49px;font-size:20px;"><span style="color:red;">Current price:</span> {{ name.startingBid }}$<br></p>
+					{% endif %}
+				</div>
+			</div>
+    	{% endfor %}
+    </ul>
+	{% else %}
+		<h3 style="text-indent: 60px;"> This category has no entries.</h3>
+	{% endif %}
+{% endblock %}

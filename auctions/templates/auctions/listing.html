@@ -1,27 +1,141 @@
 {% extends 'auctions/layout.html' %}
+{% load crispy_forms_tags %}
 {% block tite %}
 	{{ listing.name }}
 {% endblock %}
 
 {% block body %}
-	Listing :{{ listing.title }}
-	<img src= "{{ listing.image.url }}" alt = "content" style="max-height:300px ;">
-	Starting Bid: {{ listing.startingBid}}$<br>
-	Listed By : {{ listing.listedBy }}<br>
-	Created On : {{ listing.createdOn }}<br>
-	<br>
-	Current bid :{{ highest_bid_amount }}$ <br>
-	{% if highest_bidder  %}
-	bidder : {{highest_bidder }}<br>
-	{% else %}
-	<h3> {{ error }} <h3>
-	{% endif %}
-	<div style = "margin-top: 30px;">
-		<h1> Make a bid:</h1>
-			<form method="POST">
-				{% csrf_token %}
-				{{ form.as_p }}
-				<button type="submit">Bid</button>
-			</form>
+	<div class="container" id="body">
+		<div class="row">
+			<div class="col-5" id="img">
+				{% if listing.image %}
+                	<img src= "{{ listing.image }}" alt = "content" style="max-width: 100%; max-height: 300px;"><br>
+            	{% else %}
+                	<img src= "http://kargoex.com/assets/images/no-image-available.jpg" style="max-height: 300px;"><br>
+            	{% endif %}
+			</div>
+			<div class="col-6">
+				<div id="watchlist">
+					{% if user.is_authenticated  %}
+					<form method="POST" action="{% url 'watchlist_view' %}">
+						{% csrf_token %}
+						<input type="hidden" name = "listing_id" value={{listing.id}} >
+						{% if listing not in user.watchlist.all %}
+						<input type="hidden" name = "add"  value="True"> 
+						<button type="submit">Add to Watchlist</button>
+						{% else %}
+						<input type="hidden" name = "add" value="False">
+						<button type="submit">Remove from Watchlist</button>
+						{% endif %}
+					</form>
+					{% endif %}
+				</div>
+				<div id="title">
+					<strong>{{ listing.title }}</strong>
+				</div>
+				<div id= "status">
+					Status: 
+					{% if listing.active %} 
+					Active 
+					{% if user.is_authenticated and user == listing.listedBy %}
+					<form method ="POST" action = "{% url 'deactivate_listing' listing.id %}"> 
+						{% csrf_token %}
+						<input type="hidden" name="active" value=False> 
+						<button type="submit">Close Auction.</button>
+					</form>
+					{% endif %}
+					{% else %}
+					closed
+					{% endif %}
+				</div>
+				
+				<div id = "bid_info">
+					<p>
+						Starting Bid: {{ listing.startingBid}}$.
+					</p>
+					<p>
+						Listed By : {{ listing.listedBy }}
+					</p>
+					<p>
+						Created On : {{ listing.createdOn| date:" d M Y H:i" }}h
+					</p>
+					<p>
+						Current bid:<strong style="color: red;"> {{ highest_bid_amount }}$.</strong> 
+					</p>
+					{% if highest_bidder %}
+						{% if highest_bidder == user %}
+							{% if not listing.active %}
+								Congratulations, you have won this auction! <br>
+							{% else %}
+								Bidder: You.
+							{% endif %}
+						{% else %}
+							Bidder: {{ highest_bidder }} .
+						{% endif %}
+					{% endif %}
+					{% if error  %}
+						<strong>{{ error }} </strong> 
+					{% endif %}
+				</div>
+				{% if listing.active and user != user.listedBy %}
+				<div id="bid_form"  style = "margin-top: 30px;">
+					<h1> Make a bid:</h1>
+					{% if messages %}
+					<ul class="messages">
+						{% for message in messages %}
+						<li {% if message.tags %} class="{{ message.tags }}"{% endif %}><div class="alert alert-danger" role="alert">{{ message }}</div></li>
+						{% endfor %}
+					</ul>
+					{% endif %}
+					<form method="POST" action="{% url 'listing_page' listing.id %}">
+						{% csrf_token %}
+						{{ form|crispy }}
+						<button class="btn btn-primary" style="width: 90px;" type="submit">  Bid  </button>
+					</form>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+		<div id="comments" class="container">
+			<h4>Comments</h4>
+			<hr>
+			{% if listing.listing_comments.all %}
+				{% for comment in listing.listing_comments.all %}
+					<div class="comment">
+						<div id="usernameComment">
+							<img src="https://www.logolynx.com/images/logolynx/03/039b004617d1ef43cf1769aae45d6ea2.png" alt="user" height="17px">
+							<strong>{{ comment.user }}</strong><br>
+							{{ comment.time|date:"d M Y H:i" }}h
+						</div>
+						<div id="commentText">
+							{{ comment.text }}
+						</div>
+					</div>
+				{% endfor %}
+				<div id="comment form">
+					<h5>Make a comment:</h5><br>
+						{% if user.is_authenticated %}
+							<form method="POST" action="{% url 'comment_view' listing.id %}">
+								{% csrf_token %}
+								{{ comment_form|crispy }}
+								<button class="btn btn-primary" type="submit">Comment</button>
+							</form>
+						{% else %}
+							You must <a href="{% url 'login' %}">Sign in</a> to be able to comment.
+						{% endif %}
+				</div>
+			{% else %}
+				<h5>Be first to comment:</h5><br>
+					{% if user.is_authenticated %}
+						<form method="POST" action="{% url 'comment_view' listing.id %}">
+							{% csrf_token %}
+							{{ comment_form|crispy }}
+							<button class="btn btn-primary" type="submit">Comment</button>
+						</form>
+					{% else %}
+						You must <a href="{% url 'login' %}">Sign in</a> to be able to comment.
+					{% endif %}
+			{% endif %}
+		</div>
 	</div>
 {% endblock %}

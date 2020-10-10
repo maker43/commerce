@@ -1,17 +1,20 @@
 from django import forms
-from .models import Listing, Bid
+from .models import Listing, Bid, Comment
 
 class ListingForm(forms.ModelForm):
     class Meta:
-        model = Listing
-        exclude = ["active","listedBy", "createdOn"]
+        model   = Listing
+        exclude = ["active","listedBy", "createdOn", "watchers"]
 
 class BidForm(forms.ModelForm):
     class Meta:
-        model = Bid
+        model  = Bid
         fields = [ "bid", ]
 
-
-
-        # bid should be presented on the page, starting bid is there and current bit should also be there 
-        # cuurent bid is part of the bid class and maybe Bid should be child class off Listing ** that is an interesting concept
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model  = Comment
+        fields = ["text"]
+        labels = {
+            "text":'',
+        }

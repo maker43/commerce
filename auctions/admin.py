@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Bid, Listing
+from .models import User, Bid, Listing, Comment
 # Register your models here.
 
 class BidAdmin(admin.ModelAdmin):
@@ -8,3 +8,4 @@ class BidAdmin(admin.ModelAdmin):
 admin.site.register(Listing)
 admin.site.register(Bid, BidAdmin)
 admin.site.register(User)
+admin.site.register(Comment)

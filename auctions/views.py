@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
@@ -5,9 +6,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 import datetime
-from .models import User, Listing
-from .forms import ListingForm, BidForm
-
+from .models import User, Listing, Bid, Comment,Category
+from .forms import ListingForm, BidForm, CommentForm
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     listings = Listing.objects.all()
@@ -69,18 +70,15 @@ def register(request):
 
 def create(request):
     if request.method == "POST":
-        form = ListingForm( request.POST, request.FILES)
+        form = ListingForm( request.POST)
         user = request.user
-
         if form.is_valid():
             listing = form.instance
             listing.listedBy = user 
             listing.save()
-
             return render(request, "auctions/index.html", {
                 "listings": Listing.objects.all()
             })
-
     else:
         form = ListingForm()
     
@@ -91,17 +89,18 @@ def create(request):
 def listing_page(request,listing_id):
     listing = Listing.objects.get(pk=listing_id)
     # define highest bid
+
     if len(listing.bids.all()) > 0:
-            highest_bid = int(max(listing.bids.values_list('bid'))[0])
+            highest_bid = int(max(listing.bids.all()).bid)
             highest_bidder = max(listing.bids.all()).bidder
     else:
         highest_bid = listing.startingBid
-        highest_bidder = "First bid is yet to be made."
+        highest_bidder = None
 
     if request.method == "POST":
         #get all post information
         form = BidForm(request.POST)
-        bidAmount = int(request.POST["bid"])
+        bidAmount = int(request.POST.get("bid", False))
         bidder = request.user
         # check if the new bid is Valid
         if bidAmount > highest_bid:
@@ -112,19 +111,70 @@ def listing_page(request,listing_id):
             bid.bid = bidAmount
             bid.save()
             return render( request, "auctions/listing.html", {
-        "form":BidForm(), "listing":listing, "highest_bid_amount": bidAmount,
+        "form":BidForm(),"comment_form":CommentForm(), "listing":listing, "highest_bid_amount": bidAmount,
         "highest_bidder": bidder, 
         })
         else:
-            # return message that input is not good
-            # i need also to manage that bid is changed on the main page
-            
-            return render(request, "auctions/listing.html", {
-                "form": BidForm(), "listing": listing, "highest_bid_amount": highest_bid,
-                "highest_bidder": None, "error": f"Value error: Your bid ({bidAmount}$) is not high enough.\nMinimal bid is {highest_bid+1}$"
-            })
+            messages.error(request, f'Bid not high enough. Bid must be at least{highest_bid+1}')
+            return HttpResponseRedirect(reverse("listing_page", args=(listing.id,)))
     else:
         return render( request, "auctions/listing.html", {
-        "form":BidForm(), "listing":listing, "highest_bid_amount": highest_bid,
-        "highest_bidder": highest_bidder,
+        "form":BidForm(), "comment_form":CommentForm(),"listing":listing, "highest_bid_amount": highest_bid,
+        "highest_bidder": highest_bidder, 
         })
+
+def deactivate_listing(request, listing_id):
+    if request.method == "POST":
+        listing = Listing.objects.get(pk = listing_id)
+        listing.active = False
+        listing.save()
+        return HttpResponseRedirect(reverse("listing_page", args=(listing.id,)))
+
+@login_required
+def watchlist_view(request):
+    user = request.user
+    if request.method == "POST":
+        listing_id = request.POST.get("listing_id", False)
+        listing = Listing.objects.get(pk=listing_id)
+        add = request.POST["add"]
+        if add == "True":
+            user.watchlist.add(listing)
+            user.save()
+        elif add == "False":
+            user.watchlist.remove(listing)
+            user.save()
+        watchlist = user.watchlist.all()
+        return HttpResponseRedirect(reverse("listing_page", args=(listing.id,)))
+    if request.user.is_anonymous:
+        watchlist = None
+    else:
+        watchlist = user.watchlist.all()
+    return render(request, "auctions/watchlist.html", {
+        "watchlist":watchlist
+    })
+
+@login_required
+def comment_view(request,listing_id):
+    if request.method == "POST":
+        listing = Listing.objects.get(pk=listing_id)
+        comment_text = request.POST.get("text",False)
+        user = request.user
+        comment= Comment( text=comment_text, user=user, listing=listing )
+        comment.save()
+        return HttpResponseRedirect(reverse("listing_page", args=(listing_id,)))
+
+def categories_view(request):
+    categories = Category.values
+    return render(request, 'auctions/categories.html', {
+        "categories":categories,
+    })
+def category_view(request, category_name):
+    listings = Listing.objects.all()
+    category_listings = []
+    for listing in listings:
+        if listing.category == category_name:
+            category_listings.append(listing)
+    
+    return render(request, 'auctions/category.html', {
+        "listings": listings, "category_listings": category_listings, "category_name":category_name,
+    })
