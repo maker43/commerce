@@ -76,9 +76,7 @@ def create(request):
             listing = form.instance
             listing.listedBy = user 
             listing.save()
-            return render(request, "auctions/index.html", {
-                "listings": Listing.objects.all()
-            })
+            return HttpResponseRedirect(reverse("index"))
     else:
         form = ListingForm()
     
@@ -115,7 +113,7 @@ def listing_page(request,listing_id):
         "highest_bidder": bidder, 
         })
         else:
-            messages.error(request, f'Bid not high enough. Bid must be at least{highest_bid+1}')
+            messages.error(request, f'Bid not high enough. Bid must be at least {highest_bid+1}$.')
             return HttpResponseRedirect(reverse("listing_page", args=(listing.id,)))
     else:
         return render( request, "auctions/listing.html", {
