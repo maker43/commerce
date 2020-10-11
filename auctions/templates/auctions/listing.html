@@ -59,9 +59,15 @@
 					<p>
 						Created On: {{ listing.createdOn| date:" d M Y H:i" }}h
 					</p>
+					{% if listing.active %}
 					<p>
 						Current bid:<strong style="color: red;"> {{ highest_bid_amount }}$.</strong> 
 					</p>
+					{% else %}
+					<p>
+						Auction item sold for:<strong style="color: red;"> {{ highest_bid_amount }}$.</strong> 
+					</p>
+					{% endif %}
 					{% if highest_bidder %}
 						{% if highest_bidder == user %}
 							{% if not listing.active %}
